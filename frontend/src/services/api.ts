@@ -1,5 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
+// In Vercel Services mode, VITE_API_URL is injected via service binding
+// from the backend service. Falls back to localhost for local development.
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
 
 const apiClient: AxiosInstance = axios.create({

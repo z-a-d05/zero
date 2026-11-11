@@ -29,6 +29,8 @@ from api_gateway.routers.auth import get_current_user
 
 router = APIRouter(prefix="/predictions", tags=["Predictions & Explanations"])
 
+# In Vercel Services mode, these URLs are injected via service bindings.
+# For local development, they fall back to localhost ports.
 PREDICTION_SERVICE_URL = os.getenv("PREDICTION_SERVICE_URL", "http://localhost:8001")
 EXPLAINABILITY_SERVICE_URL = os.getenv("EXPLAINABILITY_SERVICE_URL", "http://localhost:8002")
 

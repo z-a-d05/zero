@@ -29,7 +29,7 @@
     "frontend": {
       "root": "frontend",
       "framework": "vite",
-      "buildCommand": "npm install && npx tsc && npx vite build",
+      "buildCommand": "npm install && npx vite build",
       "devCommand": "npm run dev",
       "outputDirectory": "dist",
       "bindings": [

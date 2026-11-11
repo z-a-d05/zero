@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prediction-service
+  namespace: dpis
+  labels:
+    app: prediction-service
+    version: "1.0.0"
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: prediction-service
+  template:
+    metadata:
+      labels:
+        app: prediction-service
+        version: "1.0.0"
+    spec:
+      containers:
+        - name: prediction-service
+          image: dpis/prediction-service:1.0.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8001
+              name: http
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8001
+            initialDelaySeconds: 60
+            periodSeconds: 20
+            failureThreshold: 3
+          envFrom:
+            - secretRef:
+                name: dpis-secrets
+          volumeMounts:
+            - name: models-volume
+              mountPath: /models
+              readOnly: true
+      volumes:
+        - name: models-volume
+          persistentVolumeClaim:
+            claimName: dpis-models-pvc
+      terminationGracePeriodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prediction-service
+  namespace: dpis
+  labels:
+    app: prediction-service
+spec:
+  selector:
+    app: prediction-service
+  ports:
+    - name: http
+      port: 8001
+      targetPort: 8001
+      protocol: TCP
+  type: ClusterIP

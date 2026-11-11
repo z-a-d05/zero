@@ -1,0 +1,107 @@
+openapi: 3.0.3
+info:
+  title: Diabetes Prediction Intelligence System (DPIS) API
+  version: 1.0.0
+  description: Clinical Decision Support Platform for Diabetes Risk Stratification and Explainable AI.
+servers:
+  - url: http://localhost:8000/api
+    description: Local API Gateway
+paths:
+  /auth/register:
+    post:
+      summary: Register a new patient or clinician account
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                role: { type: string, enum: [patient, clinician, admin], default: patient }
+      responses:
+        '201':
+          description: User created successfully
+  /auth/login:
+    post:
+      summary: User login generating JWT bearer token
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Access token generated
+  /patients/:
+    get:
+      summary: List patients (Clinician only)
+      tags: [Patients]
+      parameters:
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: sort_by_risk
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Array of patient clinical records
+    post:
+      summary: Create new patient record
+      tags: [Patients]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, age, gender, bmi, hba1c, fasting_glucose, blood_pressure_sys, blood_pressure_dia]
+      responses:
+        '201':
+          description: Patient created
+  /predictions/predict:
+    post:
+      summary: Generate calibrated diabetes prediction and SHAP explanation
+      tags: [Predictions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patient_id]
+              properties:
+                patient_id: { type: string, format: uuid }
+                prediction_type: { type: string, enum: [T1DM, T2DM, GDM, MODY], default: T2DM }
+      responses:
+        '201':
+          description: Calculated risk score and full SHAP/LIME attribution
+  /predictions/whatif:
+    post:
+      summary: Simulate lifestyle or therapeutic what-if modifications
+      tags: [Predictions]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [patient_id, modifications]
+              properties:
+                patient_id: { type: string, format: uuid }
+                prediction_type: { type: string, default: T2DM }
+                modifications: { type: object }
+      responses:
+        '200':
+          description: Comparative delta analysis
+

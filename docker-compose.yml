@@ -1,0 +1,124 @@
+version: "3.9"
+
+networks:
+  dpis_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: dpis_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dpis_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-dpis_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql:ro
+    networks:
+      - dpis_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dpis_user -d dpis_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  api_gateway:
+    build:
+      context: ./backend/api_gateway
+      dockerfile: Dockerfile
+    container_name: dpis_api_gateway
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${ACCESS_TOKEN_EXPIRE_MINUTES:-1440}
+      PREDICTION_SERVICE_URL: http://prediction_service:8001
+      EXPLAINABILITY_SERVICE_URL: http://explainability_service:8002
+      PATIENT_SERVICE_URL: http://patient_service:8003
+      AUDIT_SERVICE_URL: http://audit_service:8004
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dpis_network
+    restart: unless-stopped
+
+  prediction_service:
+    build:
+      context: ./backend/prediction_service
+      dockerfile: Dockerfile
+    container_name: dpis_prediction_service
+    ports:
+      - "8001:8001"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      MODEL_PATH: /models
+    volumes:
+      - ./ml_pipelines/models:/models:ro
+    networks:
+      - dpis_network
+    restart: unless-stopped
+
+  explainability_service:
+    build:
+      context: ./backend/explainability_service
+      dockerfile: Dockerfile
+    container_name: dpis_explainability_service
+    ports:
+      - "8002:8002"
+    networks:
+      - dpis_network
+    restart: unless-stopped
+
+  patient_service:
+    build:
+      context: ./backend/patient_service
+      dockerfile: Dockerfile
+    container_name: dpis_patient_service
+    ports:
+      - "8003:8003"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dpis_network
+    restart: unless-stopped
+
+  audit_service:
+    build:
+      context: ./backend/audit_service
+      dockerfile: Dockerfile
+    container_name: dpis_audit_service
+    ports:
+      - "8004:8004"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - dpis_network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dpis_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api_gateway
+    networks:
+      - dpis_network
+    restart: unless-stopped

@@ -2,55 +2,55 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "services": {
     "backend": {
-      "root": "backend/api_gateway",
+      "root": "backend",
       "framework": "fastapi",
-      "entrypoint": "main.py",
-      "buildCommand": "pip install -r ../../requirements.txt",
-      "devCommand": "uvicorn main:app --host 127.0.0.1 --port 8000",
+      "entrypoint": "api_gateway/main.py",
+      "buildCommand": "pip install -r requirements.txt",
+      "devCommand": "uvicorn api_gateway.main:app --host 127.0.0.1 --port 8000",
       "bindings": [
         { "type": "service", "service": "prediction-service", "format": "url", "env": "PREDICTION_SERVICE_URL" },
         { "type": "service", "service": "explainability-service", "format": "url", "env": "EXPLAINABILITY_SERVICE_URL" }
       ],
       "functions": {
-        "main.py": {
+        "api_gateway/main.py": {
           "maxDuration": 10,
           "memory": 512
         },
-        "routers/predictions.py": {
+        "api_gateway/routers/predictions.py": {
           "maxDuration": 15,
           "memory": 1024
         },
-        "routers/patients.py": {
+        "api_gateway/routers/patients.py": {
           "maxDuration": 10,
           "memory": 512
         },
-        "routers/auth.py": {
+        "api_gateway/routers/auth.py": {
           "maxDuration": 10,
           "memory": 512
         }
       }
     },
     "prediction-service": {
-      "root": "backend/prediction_service",
+      "root": "backend",
       "framework": "fastapi",
-      "entrypoint": "main.py",
-      "buildCommand": "pip install -r ../../requirements.txt",
-      "devCommand": "uvicorn main:app --host 127.0.0.1 --port 8001",
+      "entrypoint": "prediction_service/main.py",
+      "buildCommand": "pip install -r requirements.txt",
+      "devCommand": "uvicorn prediction_service.main:app --host 127.0.0.1 --port 8001",
       "functions": {
-        "main.py": {
+        "prediction_service/main.py": {
           "maxDuration": 15,
           "memory": 1024
         }
       }
     },
     "explainability-service": {
-      "root": "backend/explainability_service",
+      "root": "backend",
       "framework": "fastapi",
-      "entrypoint": "main.py",
-      "buildCommand": "pip install -r ../../requirements.txt",
-      "devCommand": "uvicorn main:app --host 127.0.0.1 --port 8002",
+      "entrypoint": "explainability_service/main.py",
+      "buildCommand": "pip install -r requirements.txt",
+      "devCommand": "uvicorn explainability_service.main:app --host 127.0.0.1 --port 8002",
       "functions": {
-        "main.py": {
+        "explainability_service/main.py": {
           "maxDuration": 10,
           "memory": 512
         }

@@ -66,8 +66,5 @@ ml_pipelines/models/
 # Test files
 tests/
 
-# Frontend source (compiled during build)
-frontend/src/
-
 # Backend source structure - only keep what's needed for each service
 # We'll use functions config to split services appropriately

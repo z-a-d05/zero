@@ -2,29 +2,29 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "services": {
     "backend": {
-      "root": "backend",
+      "root": "backend/api_gateway",
       "framework": "fastapi",
-      "entrypoint": "api_gateway/main.py",
-      "buildCommand": "pip install -r requirements.txt",
-      "devCommand": "uvicorn api_gateway.main:app --host 127.0.0.1 --port 8000",
+      "entrypoint": "main.py",
+      "buildCommand": "pip install -r ../../requirements.txt",
+      "devCommand": "uvicorn main:app --host 127.0.0.1 --port 8000",
       "bindings": [
         { "type": "service", "service": "prediction-service", "format": "url", "env": "PREDICTION_SERVICE_URL" },
         { "type": "service", "service": "explainability-service", "format": "url", "env": "EXPLAINABILITY_SERVICE_URL" }
       ]
     },
     "prediction-service": {
-      "root": "backend",
+      "root": "backend/prediction_service",
       "framework": "fastapi",
-      "entrypoint": "prediction_service/main.py",
-      "buildCommand": "pip install -r requirements.txt",
-      "devCommand": "uvicorn prediction_service.main:app --host 127.0.0.1 --port 8001"
+      "entrypoint": "main.py",
+      "buildCommand": "pip install -r ../../requirements.txt",
+      "devCommand": "uvicorn main:app --host 127.0.0.1 --port 8001"
     },
     "explainability-service": {
-      "root": "backend",
+      "root": "backend/explainability_service",
       "framework": "fastapi",
-      "entrypoint": "explainability_service/main.py",
-      "buildCommand": "pip install -r requirements.txt",
-      "devCommand": "uvicorn explainability_service.main:app --host 127.0.0.1 --port 8002"
+      "entrypoint": "main.py",
+      "buildCommand": "pip install -r ../../requirements.txt",
+      "devCommand": "uvicorn main:app --host 127.0.0.1 --port 8002"
     },
     "frontend": {
       "root": "frontend",
@@ -39,32 +39,32 @@
   },
   "functions": {
     "backend/api_gateway/main.py": {
-      "maxDuration": 30,
-      "memory": 1024
+      "maxDuration": 10,
+      "memory": 512
     },
     "backend/api_gateway/routers/predictions.py": {
-      "maxDuration": 30,
+      "maxDuration": 15,
       "memory": 1024
     },
     "backend/api_gateway/routers/patients.py": {
-      "maxDuration": 30,
+      "maxDuration": 10,
       "memory": 512
     },
     "backend/api_gateway/routers/auth.py": {
-      "maxDuration": 30,
+      "maxDuration": 10,
       "memory": 512
     },
     "backend/prediction_service/main.py": {
-      "maxDuration": 30,
+      "maxDuration": 15,
       "memory": 1024
     },
     "backend/explainability_service/main.py": {
-      "maxDuration": 30,
+      "maxDuration": 10,
       "memory": 512
     },
-    "frontend/**": {
-      "maxDuration": 30,
-      "memory": 1024
+    "frontend/dist/**": {
+      "maxDuration": 10,
+      "memory": 512
     }
   },
   "rewrites": [

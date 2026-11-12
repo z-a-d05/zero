@@ -1,11 +1,12 @@
 import axios, { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
-// In Vercel Services mode, VITE_API_URL is injected via service binding
-// from the backend service. Falls back to localhost for local development.
-const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || 'http://localhost:8000';
+// Empty in production so requests go to the same origin (`/api/...`), which
+// works behind Vercel rewrites or a reverse proxy. In local development the
+// Vite dev-server proxy forwards `/api` to the backend.
+const API_BASE_URL = (import.meta.env?.VITE_API_URL || '').replace(/\/+$/, '');
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: `${API_BASE_URL}/api/v1`,
+  baseURL: `${API_BASE_URL}/api`,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -36,7 +37,7 @@ apiClient.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          const response = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
+          const response = await axios.post(`${API_BASE_URL}/api/auth/refresh`, {
             refreshToken,
           });
           const { accessToken } = response.data;

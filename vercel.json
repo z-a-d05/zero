@@ -1,80 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "services": {
-    "backend": {
-      "root": "backend",
-      "framework": "fastapi",
-      "entrypoint": "api_gateway/main.py",
-      "buildCommand": "pip install -r requirements.txt",
-      "devCommand": "uvicorn api_gateway.main:app --host 127.0.0.1 --port 8000",
-      "bindings": [
-        { "type": "service", "service": "prediction-service", "format": "url", "env": "PREDICTION_SERVICE_URL" },
-        { "type": "service", "service": "explainability-service", "format": "url", "env": "EXPLAINABILITY_SERVICE_URL" }
-      ],
-      "functions": {
-        "api_gateway/main.py": {
-          "maxDuration": 10,
-          "memory": 512
-        },
-        "api_gateway/routers/predictions.py": {
-          "maxDuration": 15,
-          "memory": 1024
-        },
-        "api_gateway/routers/patients.py": {
-          "maxDuration": 10,
-          "memory": 512
-        },
-        "api_gateway/routers/auth.py": {
-          "maxDuration": 10,
-          "memory": 512
-        }
-      }
-    },
-    "prediction-service": {
-      "root": "backend",
-      "framework": "fastapi",
-      "entrypoint": "prediction_service/main.py",
-      "buildCommand": "pip install -r requirements.txt",
-      "devCommand": "uvicorn prediction_service.main:app --host 127.0.0.1 --port 8001",
-      "functions": {
-        "prediction_service/main.py": {
-          "maxDuration": 15,
-          "memory": 1024
-        }
-      }
-    },
-    "explainability-service": {
-      "root": "backend",
-      "framework": "fastapi",
-      "entrypoint": "explainability_service/main.py",
-      "buildCommand": "pip install -r requirements.txt",
-      "devCommand": "uvicorn explainability_service.main:app --host 127.0.0.1 --port 8002",
-      "functions": {
-        "explainability_service/main.py": {
-          "maxDuration": 10,
-          "memory": 512
-        }
-      }
-    },
-    "frontend": {
-      "root": "frontend",
-      "framework": "vite",
-      "buildCommand": "npm install && node node_modules/vite/bin/vite.js build",
-      "devCommand": "npm run dev",
-      "outputDirectory": "dist",
-      "bindings": [
-        { "type": "service", "service": "backend", "format": "url", "env": "VITE_API_URL" }
-      ],
-      "functions": {
-        "dist/**": {
-          "maxDuration": 10,
-          "memory": 512
-        }
-      }
-    }
-  },
+  "installCommand": "npm --prefix frontend install",
+  "buildCommand": "npm --prefix frontend run build",
+  "outputDirectory": "frontend/dist",
   "rewrites": [
-    { "source": "/api/(.*)", "destination": { "service": "backend" } },
-    { "source": "/(.*)", "destination": { "service": "frontend" } }
+    { "source": "/api/:path*", "destination": "/api/:path*" },
+    { "source": "/:path*", "destination": "/index.html" }
   ]
 }

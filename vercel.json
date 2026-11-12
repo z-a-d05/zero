@@ -37,18 +37,38 @@
       ]
     }
   },
-  "rewrites": [
-    {
-      "source": "/api/(.*)",
-      "destination": {
-        "service": "backend"
-      }
+  "functions": {
+    "backend/api_gateway/main.py": {
+      "maxDuration": 30,
+      "memory": 1024
     },
-    {
-      "source": "/(.*)",
-      "destination": {
-        "service": "frontend"
-      }
+    "backend/api_gateway/routers/predictions.py": {
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "backend/api_gateway/routers/patients.py": {
+      "maxDuration": 30,
+      "memory": 512
+    },
+    "backend/api_gateway/routers/auth.py": {
+      "maxDuration": 30,
+      "memory": 512
+    },
+    "backend/prediction_service/main.py": {
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "backend/explainability_service/main.py": {
+      "maxDuration": 30,
+      "memory": 512
+    },
+    "frontend/**": {
+      "maxDuration": 30,
+      "memory": 1024
     }
+  },
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": { "service": "backend" } },
+    { "source": "/(.*)", "destination": { "service": "frontend" } }
   ]
 }
